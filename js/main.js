@@ -11,10 +11,12 @@ function inicio()
 }
 
 //Variables
-var dibujo, ctx, fondo, intervalo, pared, bola;
+var dibujo, ctx, fondo, intervalo, pared, bola, direccion;
+var muros_dibujados = false;
 var juego = {estado : 'iniciando'};
 var teclado = {};
 var muros = [];
+var murosInternos = [];
 var texto =
 {
 	titulo: '',
@@ -63,55 +65,79 @@ function dibujarMuro()
 {
 	if(juego.estado == 'nivel 1')
 	{
-		//Muro superior
-		for(var i = 0; i <= 13; i++)
+		//Muro superior limite
+		if(muros_dibujados == false)
 		{
-			muros.push({
-				x: 50 + (i * 50),
-				y: 50,
-				width: 50,
-				height: 50
-			})
-		}
-		//Muro inferior
-		for(var i = 0; i <= 13; i++)
-		{
-			muros.push({
-				x: 50 + (i * 50),
-				y: dibujo.height - 100,
-				width: 50,
-				height: 50
-			})
-		}
-		//Muro vertical izquierdo
-		for(var i = 0; i <= 9; i++)
-		{
-			muros.push({
-				x: 50,
-				y: 50 + (i * 50),
-				width: 50,
-				height: 50
-			})
-		}
-		//Muro vertical derecho
-		for(var i = 0; i <= 9; i++)
-		{
-			muros.push({
-				x: dibujo.width - 100,
-				y: 50 + (i * 50),
-				width: 50,
-				height: 50
-			})
-		}
-		//Muro vertical central
-		for(var i = 0; i <= 9; i++)
-		{
-			muros.push({
-				x: 375,
-				y: 50 + (i * 50),
-				width: 50,
-				height: 50
-			})
+			for(var i = 0; i <= 13; i++)
+			{
+				muros.push({
+					x: 50 + (i * 50),
+					y: 50,
+					width: 50,
+					height: 50,
+					limite: true
+				})
+			}
+			//Muro inferior limite
+			for(var i = 0; i <= 13; i++)
+			{
+				muros.push({
+					x: 50 + (i * 50),
+					y: dibujo.height - 100,
+					width: 50,
+					height: 50,
+					limite: true
+				})
+			}
+			//Muro vertical izquierdo limite
+			for(var i = 0; i <= 9; i++)
+			{
+				muros.push({
+					x: 50,
+					y: 50 + (i * 50),
+					width: 50,
+					height: 50,
+					limite: true
+				})
+			}
+			//Muro vertical derecho limite
+			for(var i = 0; i <= 9; i++)
+			{
+				muros.push({
+					x: dibujo.width - 100,
+					y: 50 + (i * 50),
+					width: 50,
+					height: 50,
+					limite: true
+				})
+			}
+			//Muro vertical central
+			for(var i = 0; i <= 2; i++)
+			{
+				muros.push({
+					x: 375,
+					y: 50 + (i * 50),
+					width: 50,
+					height: 50,
+					limite: false
+				})
+			}
+			//Muro vertical central
+			for(var i = 0; i <= 4; i++)
+			{
+				muros.push({
+					x: 375,
+					y: 250 + (i * 50),
+					width: 50,
+					height: 50,
+					limite: false
+				})
+			}
+			murosInternos = muros.filter(function(muros)
+			{
+				return muros.limite == false;
+			});
+			muros_dibujados = true;
 		}
 	}
 	for(var i in muros)
@@ -136,6 +162,7 @@ function moverBola()
 	if(teclado[37])//Flecha izquierda
 	{
 		//Movimiento a la izquierda
+		direccion = "izquierda";
 		pelota.x -=15;
 		if(pelota.x < 100)
 		{
@@ -145,6 +172,7 @@ function moverBola()
 	if(teclado[39])//Flecha derecha
 	{
 		//Movimiento a la derecha
+		direccion = "derecha";
 		var limite = dibujo.width - 150;
 		pelota.x +=15;
 		if(pelota.x > limite)
@@ -155,6 +183,7 @@ function moverBola()
 	if(teclado[38])//Flecha arriba
 	{
 		//Movimiento arriba
+		direccion = "arriba";
 		pelota.y -=15;
 		if(pelota.y < 100)
 		{
@@ -164,6 +193,7 @@ function moverBola()
 	if(teclado[40])//Flecha abajo
 	{
 		//Movimiento abajo
+		direccion = "abajo";
 		var limite = dibujo.height - 150;
 		pelota.y +=15;
 		if(pelota.y > limite)
@@ -240,14 +270,51 @@ function hit(a,b)
 }
 function verificarContacto()
 {
-	for( var i in muros)
+	for( var i in murosInternos)
 	{
-		var muro = muros[i];
-		if(hit(pelota,muro))
+		var muro = murosInternos[i];
+
+		var izq_muro = murosInternos[i].x;
+		var top_muro = murosInternos[i].y;
+		var der_muro = izq_muro + murosInternos[i].width;
+		var aba_muro = top_muro + murosInternos[i].height;
+
+		var izq_pelota = pelota.x;
+		var top_pelota = pelota.y;
+		var der_pelota = izq_pelota + pelota.width;
+		var aba_pelota = top_pelota + pelota.height;
+
+		//max derecha nave = izqu muro
+		/*if(der_nave >= izq_muro && izq_nave < der_muro)
 		{
-			//pelota.x = muro.x;
-			//pelota.y = muro.y;
+			if(aba_nave >= top_muro && top_nave < aba_muro)
+			{
+				hit = true;
+			}
+		}*/
+
+
+		if(hit(muro,pelota))
+		{
+			if(direccion == "derecha")
+			{
+				pelota.x = izq_muro - pelota.width - 1;
+			}
+			if(direccion == "izquierda")
+			{
+				pelota.x = der_muro + 1;
+			}
+			if(direccion == "arriba")
+			{
+				pelota.y = aba_muro + 1;
+			}
+			if(direccion == "abajo")
+			{
+				pelota.y = top_muro - pelota.height - 1;
+			}
 		}
+
+		
 	}
 }
 //Funciones en frameLoop
