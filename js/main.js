@@ -6,12 +6,12 @@ function inicio()
 	agregarEventosTeclado();
 	intervalo = window.setInterval(function(){
 		frameLoop();
-	}, 1000/80);
+	}, 60);
 
 }
 
 //Variables
-var dibujo, ctx, fondo, intervalo, pared, bola, direccion;
+var dibujo, ctx, fondo, intervalo, pared, bola, direccion, hayContacto = false;
 var muros_dibujados = false;
 var juego = {estado : 'iniciando'};
 var teclado = {};
@@ -112,10 +112,10 @@ function dibujarMuro()
 				})
 			}
 			//Muro vertical central
-			for(var i = 0; i <= 2; i++)
+			for(var i = 0; i <= 1; i++)
 			{
 				muros.push({
-					x: 375,
+					x: 350,
 					y: 50 + (i * 50),
 					width: 50,
 					height: 50,
@@ -126,7 +126,7 @@ function dibujarMuro()
 			for(var i = 0; i <= 4; i++)
 			{
 				muros.push({
-					x: 375,
+					x: 350,
 					y: 250 + (i * 50),
 					width: 50,
 					height: 50,
@@ -164,6 +164,12 @@ function moverBola()
 		//Movimiento a la izquierda
 		direccion = "izquierda";
 		pelota.x -=15;
+		verificarContacto();
+		if(hayContacto)
+		{
+			pelota.x +=15;
+			//hayContacto = false;
+		}
 		if(pelota.x < 100)
 		{
 			pelota.x = 100;
@@ -175,6 +181,12 @@ function moverBola()
 		direccion = "derecha";
 		var limite = dibujo.width - 150;
 		pelota.x +=15;
+		verificarContacto();
+		if(hayContacto)
+		{
+			pelota.x -=15;
+			//hayContacto = false;
+		}
 		if(pelota.x > limite)
 		{
 			pelota.x = limite;
@@ -185,6 +197,12 @@ function moverBola()
 		//Movimiento arriba
 		direccion = "arriba";
 		pelota.y -=15;
+		verificarContacto();
+		if(hayContacto)
+		{
+			pelota.y +=15;
+			//hayContacto = false;
+		}
 		if(pelota.y < 100)
 		{
 			pelota.y = 100;
@@ -196,6 +214,12 @@ function moverBola()
 		direccion = "abajo";
 		var limite = dibujo.height - 150;
 		pelota.y +=15;
+		verificarContacto();
+		if(hayContacto)
+		{
+			pelota.y -=15;
+			//hayContacto = false;
+		}
 		if(pelota.y > limite)
 		{
 			pelota.y = limite;
@@ -266,55 +290,41 @@ function hit(a,b)
 			hit = true;
 		}
 	}
+
 	return hit;
 }
+
+function cruce(obj1, obj2) {
+        if (obj1.x + obj1.width < obj2.x) {
+            return false;
+        }
+        if (obj1.y + obj1.height < obj2.y) {
+            return false;
+        }
+        if (obj1.x > obj2.x + obj2.width) {
+            return false;
+        }
+        if (obj1.y > obj2.y + obj2.height) {
+            return false;
+        }
+        return true;
+}
+
 function verificarContacto()
 {
-	for( var i in murosInternos)
+	for( var i in murosInternos )
 	{
 		var muro = murosInternos[i];
 
-		var izq_muro = murosInternos[i].x;
-		var top_muro = murosInternos[i].y;
-		var der_muro = izq_muro + murosInternos[i].width;
-		var aba_muro = top_muro + murosInternos[i].height;
-
-		var izq_pelota = pelota.x;
-		var top_pelota = pelota.y;
-		var der_pelota = izq_pelota + pelota.width;
-		var aba_pelota = top_pelota + pelota.height;
-
-		//max derecha nave = izqu muro
-		/*if(der_nave >= izq_muro && izq_nave < der_muro)
+		if(cruce(muro,pelota))
 		{
-			if(aba_nave >= top_muro && top_nave < aba_muro)
-			{
-				hit = true;
-			}
-		}*/
-
-
-		if(hit(muro,pelota))
-		{
-			if(direccion == "derecha")
-			{
-				pelota.x = izq_muro - pelota.width - 1;
-			}
-			if(direccion == "izquierda")
-			{
-				pelota.x = der_muro + 1;
-			}
-			if(direccion == "arriba")
-			{
-				pelota.y = aba_muro + 1;
-			}
-			if(direccion == "abajo")
-			{
-				pelota.y = top_muro - pelota.height - 1;
-			}
+			hayContacto = true;
 		}
-
-		
+		else
+		{
+			hayContacto = false;		
+		}
+		console.log(hayContacto);		
 	}
 }
 //Funciones en frameLoop
@@ -326,5 +336,4 @@ function frameLoop()
 	dibujarMuro();
 	dibujarBola();
 	moverBola();
-	verificarContacto();
 }
